@@ -11,6 +11,8 @@ def solve(schedule):
     neighbourhood = two_swap_neighbourhood(solution)
     valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_number_conficts)
     
+    n = 0
+    
     while valid_neighbourhood:
         solution = min(valid_neighbourhood, key=lambda n: evaluation_number_conficts(schedule, n))
         neighbourhood = two_swap_neighbourhood(solution)
