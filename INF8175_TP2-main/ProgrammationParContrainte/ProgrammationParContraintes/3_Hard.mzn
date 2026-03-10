@@ -1,4 +1,4 @@
-% NOM_ETUDIANT_1 (MATRICULE_1)
+% HADJIS (2116541)
 % NOM_ETUDIANT_2 (MATRICULE_2)
 
 include "globals.mzn"; 
@@ -49,6 +49,12 @@ var int: temps_trajet;
 % Partie étudiant
 %-----------------------------------------------------------------------------%
 
+constraint all_different(i in 1..n)(chemin_tournee[i]);
+constraint chemin_tournee[length(chemin_tournee)] = 1;
+constraint all_different(i in 1..n)(circuit_tournee[i]);
+
+
+solve minimize temps_trajet;
 
 %-----------------------------------------------------------------------------%
 
