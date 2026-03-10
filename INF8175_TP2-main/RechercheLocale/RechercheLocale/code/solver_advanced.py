@@ -8,39 +8,45 @@ def solve(schedule):
     """
     # Add here your agent
     solution = generate_random_solution(schedule)
-    neighbourhood = two_swap_neighbourhood(solution)
-    valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_number_conficts)
+    neighbourhood = colorChoiceNeighbourhood(solution)
+    valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_number_conflicts)
     
     n = 0
     
     while valid_neighbourhood:
-        solution = min(valid_neighbourhood, key=lambda n: evaluation_number_conficts(schedule, n))
-        neighbourhood = two_swap_neighbourhood(solution)
-        valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_number_conficts)
+        solution = min(valid_neighbourhood, key=lambda n: evaluation_number_conflicts(schedule, n))
+        neighbourhood = colorChoiceNeighbourhood(solution)
+        valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_number_conflicts)
         n += 1
     
     return solution
-    
+
+#Initial solution: random assignments of the time slots to the courses
 def generate_random_solution(schedule):
     solution = dict()
     for c in schedule.course_list:
         choix = r.randint(1, len(schedule.course_list))
         solution[c] = choix
     return solution
-    
-def two_swap_neighbourhood(solution):
+
+#Neighbourhood function: 
+def colorChoiceNeighbourhood(solution):
     neighbourhood = []
-    for c1 in solution:
-        for c2 in solution:
-            if c1 != c2:
-                n = solution.copy()
-                n[c1], n[c2] = n[c2], n[c1]
-                neighbourhood.append(n)
+    chosenColors = set(solution.values())
+    for c in solution:
+        for color in chosenColors:
+            if color != solution[c]:
+                neighbour = solution.copy()
+                neighbour[c] = color
+                neighbourhood.append(neighbour)                
     return neighbourhood
-    
+
+#Validation function: verify if the neighbourhood contains a better solution than the current one     
 def is_improving_solution(schedule, neighbourhood, solution, evaluation_function):
-    return [n for n in neighbourhood if evaluation_function(schedule, n) < evaluation_function(schedule, solution)]
-        
-def evaluation_number_conficts(schedule, solution):
+    currentSolution = evaluation_function(schedule, solution)
+    return [n for n in neighbourhood if evaluation_function(schedule, n) < currentSolution]
+
+#Evaluation functions: determines the number of conflicts of the solution  
+def evaluation_number_conflicts(schedule, solution):
     return sum(solution[a[0]] == solution[a[1]] for a in schedule.conflict_list)    
     
