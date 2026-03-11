@@ -1,5 +1,5 @@
 % HADJIS (2116541)
-% NOM_ETUDIANT_2 (MATRICULE_2)
+% Vaillant (2143989)
 
 include "globals.mzn"; 
 
