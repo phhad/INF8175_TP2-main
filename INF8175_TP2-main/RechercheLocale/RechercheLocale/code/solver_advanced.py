@@ -50,3 +50,18 @@ def is_improving_solution(schedule, neighbourhood, solution, evaluation_function
 def evaluation_number_conflicts(schedule, solution):
     return sum(solution[a[0]] == solution[a[1]] for a in schedule.conflict_list)    
     
+def solve_with_restarts(schedule, nb_restarts):
+    best_solution = None
+    
+    for i in range(nb_restarts):
+        solution = solve(schedule)
+        if evaluation_number_conflicts(schedule, solution) < evaluation_number_conflicts(schedule, best_solution):
+            best_solution = solution
+        
+        elif evaluation_number_conflicts(schedule, best_solution) == 0:
+            break
+        
+        print("RESTART: ", i)
+    
+    return best_solution
+    
