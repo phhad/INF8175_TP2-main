@@ -38,8 +38,7 @@ if __name__ == '__main__':
         solution = solver_naive.solve(schedule)
     elif args.agent == "advanced":
         # Your nice agent
-        # solution = solver_advanced.solve(schedule)
-        solution = solver_advanced.solve_with_restarts(schedule, nb_restarts=10)
+        solution = solver_advanced.solve(schedule)
     else:
         raise Exception("This agent does not exist")
 
