@@ -36,11 +36,12 @@ var int: fin_projet;
 %-----------------------------------------------------------------------------%
 % Partie étudiant
 %-----------------------------------------------------------------------------%
-
-constraint cumulative(debut_tache, duree_tache, ressource_tache, limite);
-constraint cumulative(debut_tache, duree_tache, [1 | i in 1..n], 2);
 constraint forall(i in 1..n)(fin_tache[i] = debut_tache[i] + duree_tache[i]);
-constraint maximum(fin_projet, fin_tache);
+constraint fin_projet <= m;
+constraint fin_projet = max([fin_tache[i] | i in 1..n]);
+constraint cumulative(debut_tache, duree_tache, ressource_tache, limite);
+constraint forall(v in 1..m) (count(debut_tache, v) <= 2);
+
 solve minimize fin_projet;
 
 %-----------------------------------------------------------------------------%
