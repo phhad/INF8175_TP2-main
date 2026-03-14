@@ -7,19 +7,25 @@ def solve(schedule):
     :return: a list of tuples of the form (c,t) where c is a course and t a time slot. 
     """
     # Add here your agent
-    solution = generate_random_solution(schedule)
-    neighbourhood = colorChoiceNeighbourhood(solution)
-    valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_number_conflicts)
     
-    n = 0
+    best_solution = None
+    current_solution = generate_random_solution(schedule)
+    best_solution = hill_climbing(schedule, current_solution)
+    
+    return best_solution
+
+# Necessary hill climbing algorithm to improve the randomized solution.
+def hill_climbing(schedule, solution):
+    neighbourhood = colorChoiceNeighbourhood(solution)
+    valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_function)
     
     while valid_neighbourhood:
-        solution = min(valid_neighbourhood, key=lambda n: evaluation_number_conflicts(schedule, n))
+        solution = min(valid_neighbourhood, key=lambda n: evaluation_function(schedule, n))
         neighbourhood = colorChoiceNeighbourhood(solution)
-        valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_number_conflicts)
-        n += 1
+        valid_neighbourhood = is_improving_solution(schedule, neighbourhood, solution, evaluation_function=evaluation_function)
     
     return solution
+    
 
 #Initial solution: random assignments of the time slots to the courses
 def generate_random_solution(schedule):
@@ -46,19 +52,22 @@ def is_improving_solution(schedule, neighbourhood, solution, evaluation_function
     currentSolution = evaluation_function(schedule, solution)
     return [n for n in neighbourhood if evaluation_function(schedule, n) < currentSolution]
 
-#Evaluation functions: determines the number of conflicts of the solution  
-def evaluation_number_conflicts(schedule, solution):
-    return sum(solution[a[0]] == solution[a[1]] for a in schedule.conflict_list)    
-    
+#Evaluation functions: determines the number of conflicts as well as the number of time_slots of the solution  
+def evaluation_function(schedule, solution):
+    conflict = sum(solution[a[0]] == solution[a[1]] for a in schedule.conflict_list)   
+    time_slots = len(set(solution.values()))
+    return conflict * len(schedule.course_list) + time_slots
+
+#To prevent the local minimum problem, we will use the restart strategy.
 def solve_with_restarts(schedule, nb_restarts):
     best_solution = None
     
     for i in range(nb_restarts):
         solution = solve(schedule)
-        if evaluation_number_conflicts(schedule, solution) < evaluation_number_conflicts(schedule, best_solution):
+        if evaluation_function(schedule, solution) < evaluation_function(schedule, best_solution):
             best_solution = solution
         
-        elif evaluation_number_conflicts(schedule, best_solution) == 0:
+        elif evaluation_function(schedule, best_solution) == 0:
             break
         
         print("RESTART: ", i)
