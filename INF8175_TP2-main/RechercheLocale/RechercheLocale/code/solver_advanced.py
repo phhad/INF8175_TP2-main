@@ -29,7 +29,7 @@ def hill_climbing(schedule, solution):
     
 
 #Initial solution: random assignments of the time slots to the courses
-def generate_random_solution(schedule):
+def greedy_initial_solution(schedule):
     solution = dict()
     for c in schedule.course_list:
         choix = r.randint(1, len(schedule.course_list))
@@ -57,12 +57,12 @@ def is_improving_solution(schedule, neighbourhood, solution, evaluation_function
 def evaluation_function(schedule, solution):
     conflict = sum(solution[a[0]] == solution[a[1]] for a in schedule.conflict_list)   
     time_slots = len(set(solution.values()))
-    return conflict * len(schedule.course_list) + time_slots
+    return conflict * (len(schedule.course_list))**2 + time_slots
 
 #To prevent the minima problem, the simulated annealing algorithm will be applied
 
 def simulated_annealing(schedule, init_temp, alpha, max_iteration):
-    solution = generate_random_solution(schedule)
+    solution = greedy_initial_solution(schedule)
     neighbourhood = colorChoiceNeighbourhood(solution)
     
     i = 0
@@ -72,7 +72,7 @@ def simulated_annealing(schedule, init_temp, alpha, max_iteration):
     for i in range(max_iteration):
         candidate = r.choice(neighbourhood)
         delta = evaluation_function(schedule, candidate) - evaluation_function(schedule, solution)
-        probability = max(np.exp(-delta / temperature), 0.01)
+        probability = np.exp(-delta / temperature)
         
         if delta < 0:
             solution = candidate
