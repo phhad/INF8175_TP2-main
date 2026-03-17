@@ -1,4 +1,5 @@
 import random as r
+import numpy as np
 
 def solve(schedule):
     """
@@ -9,7 +10,7 @@ def solve(schedule):
     # Add here your agent
     
     best_solution = None
-    current_solution = generate_random_solution(schedule)
+    current_solution = simulated_annealing(schedule, 1000, 0.95, 10)
     best_solution = hill_climbing(schedule, current_solution)
     
     return best_solution
@@ -58,19 +59,31 @@ def evaluation_function(schedule, solution):
     time_slots = len(set(solution.values()))
     return conflict * len(schedule.course_list) + time_slots
 
-#To prevent the local minimum problem, we will use the restart strategy.
-def solve_with_restarts(schedule, nb_restarts):
-    best_solution = None
+#To prevent the minima problem, the simulated annealing algorithm will be applied
+
+def simulated_annealing(schedule, init_temp, alpha, max_iteration):
+    solution = generate_random_solution(schedule)
+    neighbourhood = colorChoiceNeighbourhood(solution)
     
-    for i in range(nb_restarts):
-        solution = solve(schedule)
+    i = 0
+    temperature = init_temp
+    best_solution = solution
+    
+    for i in range(max_iteration):
+        candidate = r.choice(neighbourhood)
+        delta = evaluation_function(schedule, candidate) - evaluation_function(schedule, solution)
+        probability = max(np.exp(-delta / temperature), 0.01)
+        
+        if delta < 0:
+            solution = candidate
+        
+        elif np.random.binomial(1, probability):
+            solution = candidate
+        
         if evaluation_function(schedule, solution) < evaluation_function(schedule, best_solution):
             best_solution = solution
         
-        elif evaluation_function(schedule, best_solution) == 0:
-            break
-        
-        print("RESTART: ", i)
+        temperature *= alpha
+        neighbourhood = colorChoiceNeighbourhood(solution)
     
     return best_solution
-    
