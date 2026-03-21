@@ -10,7 +10,7 @@ def solve(schedule):
     # Add here your agent
     
     best_solution = None
-    current_solution = simulated_annealing(schedule, 1000, 0.95, 10)
+    current_solution = simulated_annealing(schedule, 1000, 0.95, 5000)
     best_solution = hill_climbing(schedule, current_solution)
     
     return best_solution
@@ -27,13 +27,22 @@ def hill_climbing(schedule, solution):
     
     return solution
     
-#Initial solution: assign one time slot for each course, just like the naive solution
+#Initial solution: the greedy algorithm
 def initial_solution(schedule):
     solution = {}
-    time_slot_idx = 1
+    
+    neighbours = {c: set() for c in schedule.course_list}
+    for a, b, in schedule.conflict_list:
+        neighbours[a].add(b)
+        neighbours[b].add(a)
+    
     for c in schedule.course_list:
-        solution[c] = time_slot_idx
-        time_slot_idx += 1
+        used_colors = {solution[n] for n in neighbours[c] if n in solution}
+        color = 1
+        while color in used_colors:
+            color += 1
+        solution[c] = color
+        
     return solution
 
 #Neighbourhood function: 
@@ -65,25 +74,24 @@ def simulated_annealing(schedule, init_temp, alpha, max_iteration):
     solution = initial_solution(schedule)
     neighbourhood = colorChoiceNeighbourhood(solution)
     
-    i = 0
     temperature = init_temp
-    best_solution = solution
+    best_solution = solution.copy()
     
-    for i in range(max_iteration):
+    for _ in range(max_iteration):
         candidate = r.choice(neighbourhood)
         delta = evaluation_function(schedule, candidate) - evaluation_function(schedule, solution)
         probability = np.exp(-delta / temperature)
         
-        if delta < 0:
+        if delta < 0 or r.random() < probability:
             solution = candidate
-        
-        elif np.random.binomial(1, probability):
-            solution = candidate
-        
+
         if evaluation_function(schedule, solution) < evaluation_function(schedule, best_solution):
-            best_solution = solution
+            best_solution = solution.copy()
         
         temperature *= alpha
+        if temperature < 1e-10:
+            break
+        
         neighbourhood = colorChoiceNeighbourhood(solution)
     
     return best_solution
