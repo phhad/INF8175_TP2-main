@@ -27,7 +27,7 @@ def hill_climbing(schedule, solution):
     
     return solution
     
-#Initial solution: the greedy algorithm
+#Initial solution: the greedy algorithm consisting of assigning the lowest time slot possible to each course.
 def initial_solution(schedule):
     solution = {}
     
@@ -45,7 +45,7 @@ def initial_solution(schedule):
         
     return solution
 
-#Neighbourhood function: 
+#Neighbourhood function: swaps the time slots of one course with another one. Only the ones already used decrease the neighborhood size.
 def colorChoiceNeighbourhood(solution):
     neighbourhood = []
     chosenColors = set(solution.values())
