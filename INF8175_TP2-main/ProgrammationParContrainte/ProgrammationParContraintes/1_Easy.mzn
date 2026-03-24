@@ -24,10 +24,13 @@ array [1..n] of var 1..n: assignation_role;
 %-----------------------------------------------------------------------------%
 % Partie étudiant
 %-----------------------------------------------------------------------------%
+constraint alldifferent(assignation_role);
 
-constraint all_different(i in 1..n)(assignation_role[i]);
-constraint all_different(i in 1..n)(choix_costume[i,assignation_role[i]]);
-constraint all_different(i in 1..n)(choix_costume[assignation_role[i],i]);
+array[1..n] of var costumes: costumes_assignes = [choix_costume[assignation_role[i], i] | i in 1..n];
+constraint alldifferent(costumes_assignes);
+
+constraint forall(i in 2..n)(abs(assignation_role[i] - assignation_role[i - 1]) > 1);
+constraint forall(i in 1..(n - 1))(abs(assignation_role[i] - assignation_role[i + 1]) > 1);
 
 %-----------------------------------------------------------------------------%
 

@@ -49,12 +49,24 @@ var int: temps_trajet;
 % Partie étudiant
 %-----------------------------------------------------------------------------%
 
-constraint all_different(i in 1..n)(chemin_tournee[i]);
-constraint chemin_tournee[length(chemin_tournee)] = 1;
-constraint all_different(i in 1..n)(circuit_tournee[i]);
 
 
-solve minimize temps_trajet;
+constraint circuit_tournee[chemin_tournee[n]] = chemin_tournee[1];
+constraint forall(i in 1..n - 1)(circuit_tournee[chemin_tournee[i]] = chemin_tournee[i + 1]);
+constraint alldifferent(chemin_tournee);
+constraint chemin_tournee[n] = 1;
+constraint cumul_temps[1] = distance[chemin_tournee[n], chemin_tournee[1]] + temps_attente[chemin_tournee[1]];
+constraint forall(i in 1..n)(
+    cumul_temps[i] >= fenetre_arrivee[chemin_tournee[i], 1] /\
+    cumul_temps[i] <= fenetre_arrivee[chemin_tournee[i], 2]
+);
+constraint forall(i in 2..n)(cumul_temps[i] = cumul_temps[i - 1] + distance[chemin_tournee[i - 1], chemin_tournee[i]] + temps_attente[chemin_tournee[i]]);
+constraint temps_trajet = cumul_temps[n];
+
+solve :: seq_search([
+    int_search(chemin_tournee, first_fail, indomain_min, complete),
+    int_search(cumul_temps, input_order, indomain_min, complete)
+]) minimize temps_trajet;
 
 %-----------------------------------------------------------------------------%
 
